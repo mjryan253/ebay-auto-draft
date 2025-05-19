@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  input-handler:
+    build:
+      context: ./input_handler
+      dockerfile: Dockerfile
+    container_name: input-handler
+    restart: unless-stopped
+    env_file:
+      - ./config/input.env
+    networks:
+      - backend
+
+  processing-service:
+    build:
+      context: ./processing_service
+      dockerfile: Dockerfile
+    container_name: processing-service
+    restart: unless-stopped
+    env_file:
+      - ./config/processing.env
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
