@@ -148,9 +148,28 @@ EBAY_MARKETPLACE_ID=EBAY_US
 
 ---
 
+## Donations
+
+<script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#eb4e1e', 'J3J11F9UA1');kofiwidget2.draw();</script> 
+
+
+
 ## 📄 License
 
-MIT © Your Name
+eBay listing generator docker stack
 
-```
-```
+Copyright (C) 2025  **Matthew Ryan**
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
