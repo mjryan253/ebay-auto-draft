@@ -50,7 +50,8 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
    - Telegram Bot Token  
    - OpenAI API Key  
    - UPCItemDB API Key  
-   - eBay Developer credentials (Client ID, Client Secret, Refresh Token, Marketplace ID)  
+   - eBay Developer credentials (Client ID, Client Secret, Refresh Token, Marketplace ID)
+     - https://developer.ebay.com/join (signup can take 24 hours to be live)
 4. IMAP credentials for any email provider  
 
 ---
@@ -58,16 +59,16 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
 #
 ##  ⚙️ Configuration
 
-Create a `config/` directory and add:
+Browse to `config/` directory and edit:
 
 ### `config/input.env`
 ```dotenv
 # Telegram
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_BOT_TOKEN=<<your_telegram_bot_token>>
 TELEGRAM_MODE=polling          # or 'webhook'
 
 # IMAP-to-Webhook
-IMAP_URL=imap+ssl://user:pass@imap.example.com/?inbox=INBOX&error=Error&success=Processed
+IMAP_URL=<<imap+ssl://user:pass@imap.example.com/?inbox=INBOX&error=Error&success=Processed>>
 IMAP_POLL_INTERVAL=60          # seconds
 IMAP_ON_SUCCESS=move           # move or delete
 ````
@@ -76,15 +77,15 @@ IMAP_ON_SUCCESS=move           # move or delete
 
 ```dotenv
 # OpenAI
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=sk-<<your-key-here>>
 
 # UPCItemDB
-UPC_API_KEY=your_upcitemdb_key
+UPC_API_KEY=<<your_upcitemdb_key>>
 
 # eBay Sell Listing API
-EBAY_CLIENT_ID=...
-EBAY_CLIENT_SECRET=...
-EBAY_REFRESH_TOKEN=...
+EBAY_CLIENT_ID=<<your-ID-#>>
+EBAY_CLIENT_SECRET=<<your-secret>>
+EBAY_REFRESH_TOKEN=<<your-token>>
 EBAY_MARKETPLACE_ID=EBAY_US
 ```
 
@@ -95,16 +96,13 @@ EBAY_MARKETPLACE_ID=EBAY_US
 1. **Clone repo**
 
    ```bash
-   git clone <your-repo-url>
-   cd project-root
+   git https://github.com/mjryan253/ebay-auto-draft.git
+   cd ebay-auto-draft
    ```
 
 2. **Populate config**
 
-   ```bash
-   mkdir config
-   # create input.env and processing.env as above
-   ```
+ * Insert variables into their respective places, in both `input.env` and `processing.env` as seen above.
 
 3. **Start services**
 
@@ -112,11 +110,12 @@ EBAY_MARKETPLACE_ID=EBAY_US
    docker-compose up -d --build
    ```
 
-4. **(If webhook mode) Set Telegram webhook**
+4. **(Optional) Set Telegram webhook**
 
    ```bash
    curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=https://your.domain/webhook/telegram"
    ```
+   * **IMPORTANT** - the default setting is `polling`. If using `webhook`, be sure to update your operating mode in the `input.env` config.
 
 5. **Verify & Test**
 
