@@ -25,20 +25,21 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
 
 ## 📦 Repository Structure
 
+```
 /project-root
 ├── docker-compose.yaml
 ├── config/
 │   ├── input.env
 │   └── processing.env
-├── input\_handler/
+├── input_handler/
 │   ├── Dockerfile
 │   ├── main.py
 │   └── requirements.txt
-└── processing\_service/
+└── processing_service/
 ├── Dockerfile
 ├── main.py
 └── requirements.txt
-
+```
 ---
 
 ## 🛠️ Prerequisites
