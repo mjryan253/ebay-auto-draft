@@ -137,7 +137,10 @@ EBAY_MARKETPLACE_ID=EBAY_US
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing and Development Path
+Check out the evolving document of next-steps.md -> https://github.com/mjryan253/ebay-auto-draft/blob/main/next-steps.md
+
+To contribute to these goals, or add any features of your own, simply:
 
 1. Fork the repo
 2. Create a feature branch (`git checkout -b feature/xyz`)
