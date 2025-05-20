@@ -1,4 +1,3 @@
-```markdown
 # eBay Listing Automation
 
 A self-hosted pipeline for automatically creating eBay draft listings from images and text submitted via Telegram or email (IMAP). Built as two core microservices—Input Handler and Processing Service—running in Docker Compose.
@@ -26,8 +25,6 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
 
 ## 📦 Repository Structure
 
-```
-
 /project-root
 ├── docker-compose.yaml
 ├── config/
@@ -41,8 +38,6 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
 ├── Dockerfile
 ├── main.py
 └── requirements.txt
-
-````
 
 ---
 
