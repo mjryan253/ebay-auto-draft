@@ -2,34 +2,11 @@ import os
 import json
 import time
 import requests
-from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from imap_tools import MailBox, AND
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 IMAP_URL = os.getenv("IMAP_URL")
 IMAP_INTERVAL = int(os.getenv("IMAP_POLL_INTERVAL", 60))
 WEBHOOK_URL = "http://processing-service:8000/process"
-
-# --- TELEGRAM HANDLER ---
-async def handle_telegram(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = update.message
-    text = msg.caption or msg.text or ""
-    images = []
-
-    if msg.photo:
-        for photo in msg.photo:
-            file = await photo.get_file()
-            images.append(file.file_path)
-
-    payload = {
-        "source": "telegram",
-        "user_id": str(msg.from_user.id),
-        "text": text,
-        "images": images
-    }
-
-    requests.post(WEBHOOK_URL, json=payload)
 
 # --- IMAP POLLER ---
 def poll_email():
@@ -61,12 +38,6 @@ def poll_email():
 # --- ENTRYPOINT ---
 def main():
     import threading
-    if TELEGRAM_TOKEN:
-        app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-        app.add_handler(MessageHandler(filters.ALL, handle_telegram))
-
-        threading.Thread(target=app.run_polling).start()
-
     if IMAP_URL:
         while True:
             poll_email()

@@ -46,18 +46,10 @@ async def process(request: Request):
     # 4. Send result back to user
     message = f"✅ eBay Draft Created!\n{content}\n\nView/Edit: {ebay_draft_url}"
 
-    if data["source"] == "telegram":
-        send_telegram(data["user_id"], message)
-    elif data["source"] == "email":
+    if data["source"] == "email":
         send_email(data["user_id"], message)
 
     return {"status": "success"}
-
-def send_telegram(user_id, message):
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": user_id, "text": message}
-    requests.post(url, json=payload)
 
 def send_email(to_email, message):
     print(f"[Mock Email to {to_email}]\n{message}")
