@@ -1,25 +1,25 @@
 # eBay Listing Automation
 
-A self-hosted pipeline for automatically creating eBay draft listings from images and text submitted via Telegram or email (IMAP). Built as two core microservices—Input Handler and Processing Service—running in Docker Compose.
+A self-hosted pipeline for automatically creating eBay draft listings from images and text submitted via a **web form** or **email (IMAP)**. Built as two core microservices—Input Handler and Processing Service—running in Docker Compose.
 
 ---
 
 ## 🚀 Features
 
-- **Telegram & Email Intake**  
-  - Receive photos and descriptions via Telegram bot (polling or webhook).  
-  - Poll any IMAP mailbox and forward new messages (with attachments).  
+- **Web Form & Email Intake**
+  - Submit items directly through a user-friendly web form.
+  - Poll any IMAP mailbox and forward new messages (with attachments).
 
-- **AI Processing & Enrichment**  
-  - Validate and enrich using OpenAI’s GPT-4 Vision + UPCItemDB.  
-  - Generate eBay-optimized titles and bullet-point descriptions.  
+- **AI Processing & Enrichment**
+  - Validate and enrich using OpenAI’s GPT-4 Vision + UPCItemDB.
+  - Generate eBay-optimized titles and bullet-point descriptions.
 
-- **eBay Draft Creation**  
-  - Manage OAuth2 and call eBay Sell Listing API `createItemDraft`.  
-  - Return deep-link to draft for manual review and publishing.  
+- **eBay Draft Creation**
+  - Manage OAuth2 and call eBay Sell Listing API `createItemDraft`.
+  - Return deep-link to draft for manual review and publishing.
 
-- **Two-Way Threading**  
-  - Replies flow back through the same Telegram chat or email thread.
+- **Email Reply**
+  - For email submissions, replies (like the draft link) flow back to the same email thread.
 
 ---
 
@@ -29,102 +29,100 @@ A self-hosted pipeline for automatically creating eBay draft listings from image
 /project-root
 ├── docker-compose.yaml
 ├── config/
-│   ├── input.env
-│   └── processing.env
+│   └── app.env  # Consolidated environment variables
 ├── input_handler/
 │   ├── Dockerfile
 │   ├── main.py
-│   └── requirements.txt
+│   ├── web_server.py
+│   ├── requirements.txt
+│   └── templates/
+│       └── upload_form.html
 └── processing_service/
-├── Dockerfile
-├── main.py
-└── requirements.txt
+    ├── Dockerfile
+    ├── main.py
+    └── requirements.txt
 ```
 ---
 
 ## 🛠️ Prerequisites
 
-1. Docker & Docker Compose installed  
-2. Public IP or domain for Telegram webhooks (if using webhook mode)  
-3. Accounts & API keys:  
-   - Telegram Bot Token  
-   - OpenAI API Key  
-   - UPCItemDB API Key  
-   - eBay Developer credentials (Client ID, Client Secret, Refresh Token, Marketplace ID)
-     - https://developer.ebay.com/join (signup can take 24 hours to be live)
-4. IMAP credentials for any email provider  
+1. Docker & Docker Compose installed.
+2. Accounts & API keys:
+   - OpenAI API Key.
+   - UPCItemDB API Key (optional, for product enrichment).
+   - eBay Developer credentials (Client ID, Client Secret, Refresh Token, Marketplace ID).
+     - https://developer.ebay.com/join (signup can take 24 hours to be live).
+3. IMAP credentials for any email provider (if using email intake).
 
 ---
 
-#
-##  ⚙️ Configuration
+## ⚙️ Configuration
 
-Browse to `config/` directory and edit:
+All configuration is managed via environment variables in the `config/app.env` file. Create this file by copying or renaming `config/app.env.example` (if provided) or by creating it manually.
 
-### `config/input.env`
+Below are the key variables:
+
+### `config/app.env`
 ```dotenv
-# Telegram
-TELEGRAM_BOT_TOKEN=<<your_telegram_bot_token>>
-TELEGRAM_MODE=polling          # or 'webhook'
+# --- Input Handler Service ---
 
-# IMAP-to-Webhook
-IMAP_URL=<<imap+ssl://user:pass@imap.example.com/?inbox=INBOX&error=Error&success=Processed>>
-IMAP_POLL_INTERVAL=60          # seconds
-IMAP_ON_SUCCESS=move           # move or delete
-````
+# Web Form Configuration
+INPUT_HANDLER_WEB_PORT=8080   # Port for the web form interface
 
-### `config/processing.env`
+# IMAP-to-Webhook (Email Intake)
+IMAP_URL=imap+ssl://user:pass@imap.example.com/?inbox=INBOX&error=Error&success=Processed # Set your IMAP server URL, credentials, and folders
+IMAP_POLL_INTERVAL=60         # Seconds between email polls
+IMAP_ON_SUCCESS=move          # Action after processing: 'move' or 'delete'
 
-```dotenv
-# OpenAI
-OPENAI_API_KEY=sk-<<your-key-here>>
+# --- Processing Service ---
 
-# UPCItemDB
+# OpenAI API for GPT-4 Vision
+OPENAI_API_KEY=sk-<<your-openai-key-here>>
+
+# UPCItemDB for product metadata (Optional)
 UPC_API_KEY=<<your_upcitemdb_key>>
 
-# eBay Sell Listing API
-EBAY_CLIENT_ID=<<your-ID-#>>
-EBAY_CLIENT_SECRET=<<your-secret>>
-EBAY_REFRESH_TOKEN=<<your-token>>
-EBAY_MARKETPLACE_ID=EBAY_US
+# eBay Sell Listing API credentials
+EBAY_CLIENT_ID=<<your-ebay-client-id>>
+EBAY_CLIENT_SECRET=<<your-ebay-client-secret>>
+EBAY_REFRESH_TOKEN=<<your-ebay-refresh-token>>
+EBAY_MARKETPLACE_ID=EBAY_US   # e.g., EBAY_US, EBAY_GB, etc.
+
+# --- Shared ---
+# URL for the processing service (used by input_handler to send data)
+# Typically, this is the internal Docker network address.
+WEBHOOK_URL=http://processing-service:8000/process
 ```
+*Fill in your actual credentials and settings in `config/app.env`.*
 
 ---
 
 ## 🐳 Running the Pipeline
 
-1. **Clone repo**
+1.  **Clone repo**
+    ```bash
+    git clone https://github.com/mjryan253/ebay-auto-draft.git # Replace with the actual repo URL if different
+    cd ebay-auto-draft
+    ```
 
-   ```bash
-   git https://github.com/mjryan253/ebay-auto-draft.git
-   cd ebay-auto-draft
-   ```
+2.  **Populate `config/app.env`**
+    *   Create the `config/app.env` file if it doesn't exist.
+    *   Fill in all the required environment variables as described in the "Configuration" section.
 
-2. **Populate config**
+3.  **Start services**
+    ```bash
+    docker-compose up -d --build
+    ```
+    This will build the Docker images and start the `input-handler` and `processing-service` containers. The web form will be accessible on the port specified by `INPUT_HANDLER_WEB_PORT` (default 8080) if mapped in `docker-compose.yaml`.
 
- * Insert variables into their respective places, in both `input.env` and `processing.env` as seen above.
-
-3. **Start services**
-
-   ```bash
-   docker-compose up -d --build
-   ```
-
-4. **(Optional) Set Telegram webhook**
-
-   ```bash
-   curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=https://your.domain/webhook/telegram"
-   ```
-   * **IMPORTANT** - the default setting is `polling`. If using `webhook`, be sure to update your operating mode in the `input.env` config.
-
-5. **Verify & Test**
-
-   ```bash
-   docker-compose logs -f input-handler processing-service
-   ```
-
-   * Send a test photo/text via Telegram or email.
-   * Confirm draft link is returned in the same channel.
+4.  **Verify & Test**
+    *   **Web Form:** Open your browser and navigate to `http://localhost:INPUT_HANDLER_WEB_PORT` (e.g., `http://localhost:8080`). Submit an item with a description and images.
+    *   **Email:** Send a test photo/text via email to the configured IMAP account.
+    *   Check logs:
+        ```bash
+        docker-compose logs -f input-handler processing-service
+        ```
+    *   Confirm the draft link is returned (e.g., in the web form's response or as an email reply).
 
 ---
 
@@ -138,7 +136,7 @@ EBAY_MARKETPLACE_ID=EBAY_US
 ---
 
 ## 🤝 Contributing and Development Path
-Check out the evolving document of next-steps.md -> https://github.com/mjryan253/ebay-auto-draft/blob/main/next-steps.md
+Check out the evolving document of next-steps.md -> https://github.com/mjryan253/ebay-auto-draft/blob/main/next-steps.md (Update URL if needed)
 
 To contribute to these goals, or add any features of your own, simply:
 
@@ -173,4 +171,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-

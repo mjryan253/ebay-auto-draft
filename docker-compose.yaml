@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     env_file:
       - config/app.env
+    ports:
+      - "8080:8080"
     networks:
       - backend
 

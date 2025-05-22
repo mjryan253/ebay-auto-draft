@@ -2,11 +2,14 @@ import os
 import json
 import time
 import requests
+import threading # Added
 from imap_tools import MailBox, AND
+from web_server import app as flask_app # Changed import
 
 IMAP_URL = os.getenv("IMAP_URL")
 IMAP_INTERVAL = int(os.getenv("IMAP_POLL_INTERVAL", 60))
-WEBHOOK_URL = "http://processing-service:8000/process"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "http://processing-service:8000/process") # Updated to use getenv
+INPUT_HANDLER_WEB_PORT = os.getenv("INPUT_HANDLER_WEB_PORT", "8080") # Added
 
 # --- IMAP POLLER ---
 def poll_email():
@@ -37,11 +40,23 @@ def poll_email():
 
 # --- ENTRYPOINT ---
 def main():
-    import threading
+    # Start Flask app in a new thread
+    web_port = int(os.getenv("INPUT_HANDLER_WEB_PORT", "8080"))
+    print(f"Starting Flask app on port {web_port} with debug=True, use_reloader=False...")
+    flask_thread = threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=web_port, debug=True, use_reloader=False), daemon=True)
+    flask_thread.start()
+
     if IMAP_URL:
+        print("IMAP_URL found, starting IMAP poller...")
+        # Loop for IMAP polling
         while True:
             poll_email()
             time.sleep(IMAP_INTERVAL)
+    else:
+        print("No IMAP_URL found. IMAP poller not started.")
+        # If no IMAP poller, keep the main thread alive for the Flask thread
+        while True:
+            time.sleep(3600) # Sleep for an hour, or use another method to keep alive
 
 if __name__ == "__main__":
     main()
