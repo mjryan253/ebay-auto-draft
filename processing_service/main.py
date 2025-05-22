@@ -15,17 +15,31 @@ async def process(request: Request):
     print("[INPUT RECEIVED]", data)
 
     # 1. Validate and generate content
-    prompt = f"Generate a catchy eBay title and bullet-point description for this item: '{data['text']}'"
-    if data["images"]:
-        prompt += "\nUse context from the images if relevant."
+    user_message_content = [
+        {"type": "text", "text": f"Generate a catchy eBay title and bullet-point description for this item: '{data['text']}'"}
+    ]
+
+    if data.get("images"):
+        for image_data_url in data["images"]:
+            # Ensure the image_data_url is a string and starts with "data:image"
+            if isinstance(image_data_url, str) and image_data_url.startswith("data:image"):
+                user_message_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": image_data_url}
+                })
+            else:
+                # Log or handle malformed image data if necessary
+                print(f"Skipping malformed image data: {image_data_url}")
+    
+    messages_payload = [
+        {"role": "system", "content": "You are a helpful assistant writing eBay listings."},
+        {"role": "user", "content": user_message_content}
+    ]
 
     try:
         ai_response = openai.ChatCompletion.create(
             model="gpt-4-vision-preview",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant writing eBay listings."},
-                {"role": "user", "content": prompt}
-            ],
+            messages=messages_payload,
             max_tokens=500
         )
         content = ai_response.choices[0].message.content
@@ -46,18 +60,10 @@ async def process(request: Request):
     # 4. Send result back to user
     message = f"✅ eBay Draft Created!\n{content}\n\nView/Edit: {ebay_draft_url}"
 
-    if data["source"] == "telegram":
-        send_telegram(data["user_id"], message)
-    elif data["source"] == "email":
+    if data["source"] == "email":
         send_email(data["user_id"], message)
 
     return {"status": "success"}
-
-def send_telegram(user_id, message):
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": user_id, "text": message}
-    requests.post(url, json=payload)
 
 def send_email(to_email, message):
     print(f"[Mock Email to {to_email}]\n{message}")
