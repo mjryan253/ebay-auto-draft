@@ -2,34 +2,14 @@ import os
 import json
 import time
 import requests
-from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+import threading # Added
 from imap_tools import MailBox, AND
+from web_server import app as flask_app # Changed import
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 IMAP_URL = os.getenv("IMAP_URL")
 IMAP_INTERVAL = int(os.getenv("IMAP_POLL_INTERVAL", 60))
-WEBHOOK_URL = "http://processing-service:8000/process"
-
-# --- TELEGRAM HANDLER ---
-async def handle_telegram(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = update.message
-    text = msg.caption or msg.text or ""
-    images = []
-
-    if msg.photo:
-        for photo in msg.photo:
-            file = await photo.get_file()
-            images.append(file.file_path)
-
-    payload = {
-        "source": "telegram",
-        "user_id": str(msg.from_user.id),
-        "text": text,
-        "images": images
-    }
-
-    requests.post(WEBHOOK_URL, json=payload)
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "http://processing-service:8000/process") # Updated to use getenv
+INPUT_HANDLER_WEB_PORT = os.getenv("INPUT_HANDLER_WEB_PORT", "8080") # Added
 
 # --- IMAP POLLER ---
 def poll_email():
@@ -60,17 +40,23 @@ def poll_email():
 
 # --- ENTRYPOINT ---
 def main():
-    import threading
-    if TELEGRAM_TOKEN:
-        app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-        app.add_handler(MessageHandler(filters.ALL, handle_telegram))
-
-        threading.Thread(target=app.run_polling).start()
+    # Start Flask app in a new thread
+    web_port = int(os.getenv("INPUT_HANDLER_WEB_PORT", "8080"))
+    print(f"Starting Flask app on port {web_port} with debug=True, use_reloader=False...")
+    flask_thread = threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=web_port, debug=True, use_reloader=False), daemon=True)
+    flask_thread.start()
 
     if IMAP_URL:
+        print("IMAP_URL found, starting IMAP poller...")
+        # Loop for IMAP polling
         while True:
             poll_email()
             time.sleep(IMAP_INTERVAL)
+    else:
+        print("No IMAP_URL found. IMAP poller not started.")
+        # If no IMAP poller, keep the main thread alive for the Flask thread
+        while True:
+            time.sleep(3600) # Sleep for an hour, or use another method to keep alive
 
 if __name__ == "__main__":
     main()

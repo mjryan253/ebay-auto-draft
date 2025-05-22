@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Item</title>
+</head>
+<body>
+    <h1>Upload Item for eBay Listing</h1>
+    <form action="/web_submit" method="post" enctype="multipart/form-data">
+        <div>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" rows="4" cols="50" required></textarea>
+        </div>
+        <div>
+            <label for="images">Images:</label><br>
+            <input type="file" id="images" name="images" multiple accept="image/*" required>
+        </div>
+        <div>
+            <button type="submit">Submit</button>
+        </div>
+    </form>
+</body>
+</html>

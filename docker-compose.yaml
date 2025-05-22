@@ -8,7 +8,9 @@ services:
     container_name: input-handler
     restart: unless-stopped
     env_file:
-      - ./config/input.env
+      - config/app.env
+    ports:
+      - "8080:8080"
     networks:
       - backend
 
@@ -19,7 +21,7 @@ services:
     container_name: processing-service
     restart: unless-stopped
     env_file:
-      - ./config/processing.env
+      - config/app.env
     networks:
       - backend
 
