@@ -25,7 +25,7 @@ Built with Python and containerized using Docker, this project aims to simplify 
 
 ## Configuration
 
-All application configuration is managed through the `config/app.env` file. Ensure this file exists in the `config/` directory and is populated with the necessary values as described below.
+All application configuration is managed through the `config/app.env` file. **Note: `config/app.env` is included in `.gitignore` and will not be committed to the repository. Use `config/example.env` as a template to create your own `config/app.env` file.** Ensure this file exists in the `config/` directory and is populated with the necessary values as described below.
 
 **Key Environment Variables:**
 
