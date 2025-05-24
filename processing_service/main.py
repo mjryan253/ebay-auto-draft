@@ -118,7 +118,7 @@ async def process(request: Request):
     try:
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) # Added
         ai_response = client.chat.completions.create( # Changed
-            model="gpt-4-vision-preview",
+            model="gpt-4o",
             messages=messages_payload,
             max_tokens=500
         )
