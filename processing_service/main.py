@@ -13,13 +13,15 @@ EBAY_CLIENT_ID = os.getenv("EBAY_CLIENT_ID")
 EBAY_CLIENT_SECRET = os.getenv("EBAY_CLIENT_SECRET")
 EBAY_TOKEN = os.getenv("EBAY_REFRESH_TOKEN")
 EBAY_MARKETPLACE_ID = os.getenv("EBAY_MARKETPLACE_ID", "EBAY_US") # Default to EBAY_US
+EBAY_OAUTH_TOKEN_URL = os.getenv("EBAY_OAUTH_TOKEN_URL", "https://api.sandbox.ebay.com/identity/v1/oauth2/token")
+EBAY_API_BASE_URL = os.getenv("EBAY_API_BASE_URL", "https://api.sandbox.ebay.com")
 
 def get_ebay_access_token():
     if not all([EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, EBAY_TOKEN]):
         print("Error: eBay client ID, client secret, or refresh token is not set.")
         return None
 
-    token_url = "https://api.sandbox.ebay.com/identity/v1/oauth2/token"
+    token_url = EBAY_OAUTH_TOKEN_URL
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "Basic " + base64.b64encode(f"{EBAY_CLIENT_ID}:{EBAY_CLIENT_SECRET}".encode()).decode()
@@ -50,7 +52,7 @@ def create_ebay_inventory_item(access_token, item_sku, title, description):
         print("Error: Missing access_token for create_ebay_inventory_item")
         return False
 
-    inventory_item_url = f"https://api.sandbox.ebay.com/sell/inventory/v1/inventory_item/{item_sku}"
+    inventory_item_url = f"{EBAY_API_BASE_URL}/sell/inventory/v1/inventory_item/{item_sku}"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",

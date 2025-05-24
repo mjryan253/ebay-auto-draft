@@ -25,18 +25,23 @@ The `EBAY_REFRESH_TOKEN` allows your application to obtain new access tokens to 
     *   This tool helps you generate User access tokens (and the associated refresh token) for the Sandbox environment.
 
 *   **Configure Your Application's OAuth Settings:**
-    *   Before generating the token, you might need to configure a "Redirect URL" for your application in the eBay Developer Portal. This URL is where eBay redirects the user after they grant consent. For local testing or if your application doesn't have a live endpoint yet, you can often use `https://localhost/` or a specific value eBay might provide like `urn:ietf:wg:oauth:2.0:oob` (Out Of Band) if available for non-web flows, though for the Authorization Code Grant, a reachable redirect URI is usually needed. The eBay token generation tool linked above might also offer an "eBay OOB" option or allow you to get the token directly.
+    *   Before generating the token, you'll need to provide a **Redirect URI** to eBay. For server-side applications where you are manually generating an initial refresh token, the simplest approach is to use eBay's out-of-band (OOB) URI:
+        *   **Recommended Redirect URI:** `urn:ietf:wg:oauth:2.0:oob`
+        When you use the [eBay token generation tool](https://developer.ebay.com/my/auth?env=sandbox&index=0), look for an option to select 'OAuth redirect URI' and input this value if it's not already an option like 'eBay OOB'. This means eBay will display the authorization code or tokens to you directly in your browser, rather than redirecting to a web server you own.
 
 *   **Choose Your Client ID:**
     *   In the token generation tool, select the Sandbox **Client ID (App ID)** you noted down in Step 2.
 
 *   **Define Scopes:**
-    *   You'll need to specify the permissions (scopes) your application requires. For listing items, common scopes include:
+    *   You'll need to specify the permissions (scopes) your application requires. The scopes are space-separated. For the current functionality of creating and managing inventory items, the following scope is essential:
         *   `https://api.ebay.com/oauth/api_scope/sell.inventory`
-        *   `https://api.ebay.com/oauth/api_scope/sell.marketing`
-        *   `https://api.ebay.com/oauth/api_scope/sell.fulfillment`
+
+        The application currently also requests these scopes, which are useful for managing seller account details and fulfillment, and may be used in future enhancements:
         *   `https://api.ebay.com/oauth/api_scope/sell.account`
-    *   Select all scopes necessary for the functionalities your application will use. Start with `https://api.ebay.com/oauth/api_scope/sell.inventory` for basic listing.
+        *   `https://api.ebay.com/oauth/api_scope/sell.fulfillment`
+
+        When using the token generation tool, you can typically enter these scopes as a single space-separated string:
+        `https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment`
 
 *   **Complete the Consent Flow:**
     *   Click "Get a User Token". This will redirect you to an eBay sandbox login page.
@@ -85,3 +90,60 @@ Once you have all the credentials, you need to make them available to your appli
 **Important Security Note:** The `EBAY_CLIENT_SECRET` and `EBAY_REFRESH_TOKEN` are sensitive. Keep them secure and **do not commit `config/app.env` to your Git repository if it contains real secrets.** The `.gitignore` file should already be configured to ignore `app.env`.
 
 By following these steps, your application will be configured to authenticate with the eBay Sandbox and perform API operations on behalf of your test user.
+
+# Configuring for eBay Production (Live) Environment
+
+Once you have thoroughly tested your application using the eBay Sandbox environment, you can configure it to work with the live eBay Production environment.
+
+**CRUCIAL WARNING:** All actions performed while configured for the Production environment are REAL. This includes creating live eBay listings, managing inventory that could be sold, and potentially incurring eBay fees. Proceed with caution and ensure your application logic is correct before switching to Production.
+
+## 1. Production Credentials Required
+
+You **MUST** obtain a separate set of credentials specifically for the Production environment. Sandbox credentials will **NOT** work for the live site, and vice-versa.
+
+You will need:
+
+*   **Production Application Keys:**
+    *   Go to your eBay Developer Portal: [https://developer.ebay.com/my/keys](https://developer.ebay.com/my/keys)
+    *   Ensure you select the **Production** keyset. If you don't have one, you'll need to create it.
+    *   Note down your Production **App ID (Client ID)** and **Cert ID (Client Secret)**.
+*   **Production User Refresh Token:**
+    *   This token must be generated using your Production Application Keys and by logging in with your **real eBay account** that you intend to list items with.
+    *   Use the eBay Application OAuth Tool: [https://developer.ebay.com/my/auth](https://developer.ebay.com/my/auth)
+    *   **Critically important:** Ensure the environment selected in this tool is **Production**.
+    *   Select your Production Client ID.
+    *   Use the same Redirect URI method (e.g., `urn:ietf:wg:oauth:2.0:oob`) and scopes (e.g., `https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment`) as you did for Sandbox, ensuring they are appropriate for your live operations.
+    *   Complete the consent flow with your live eBay account. Securely store the obtained **refresh_token**.
+
+## 2. Updating `config/app.env` for Production
+
+To switch your application to the Production environment, you will need to update the following variables in your `config/app.env` file:
+
+*   `EBAY_CLIENT_ID`: Your **Production** App ID (Client ID).
+*   `EBAY_CLIENT_SECRET`: Your **Production** Cert ID (Client Secret).
+*   `EBAY_REFRESH_TOKEN`: Your **Production** User Refresh Token.
+*   `EBAY_OAUTH_TOKEN_URL`: `https://api.ebay.com/identity/v1/oauth2/token`
+*   `EBAY_API_BASE_URL`: `https://api.ebay.com`
+*   `EBAY_MARKETPLACE_ID`: The `MarketplaceIdEnum` for the eBay site you are listing on (e.g., `EBAY_US` for eBay United States). Refer to the [eBay Marketplace ID Values](https://developer.ebay.com/api-docs/sell/account/types/ba:MarketplaceIdEnum) documentation if needed.
+
+**Example `config/app.env` snippet for Production:**
+
+```env
+# ... other configurations ...
+
+# eBay Sell Listing API credentials - PRODUCTION
+EBAY_CLIENT_ID=YOUR_PRODUCTION_CLIENT_ID_HERE
+EBAY_CLIENT_SECRET=YOUR_PRODUCTION_CLIENT_SECRET_HERE
+EBAY_REFRESH_TOKEN=YOUR_PRODUCTION_REFRESH_TOKEN_HERE
+EBAY_MARKETPLACE_ID=EBAY_US # Or your desired production marketplace ID
+
+# eBay API Environment Configuration - PRODUCTION
+EBAY_OAUTH_TOKEN_URL=https://api.ebay.com/identity/v1/oauth2/token
+EBAY_API_BASE_URL=https://api.ebay.com
+```
+
+## 3. Final Checks Before Going Live
+
+*   **Review Scopes:** Ensure the OAuth scopes associated with your production refresh token grant the necessary permissions for your application's features, but no more.
+*   **Test Thoroughly:** If possible, perform a final round of testing with a limited set of non-critical items in the production environment to ensure everything works as expected.
+*   **Monitor:** After going live, monitor your application's activity and eBay account closely.
