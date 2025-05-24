@@ -26,11 +26,11 @@ Built with Python and containerized using Docker, this project aims to simplify 
 ## Outside Resources
 
 *   TutaMail: https://mail.tutanota.com
-    * Alternative for free IMAP email box: 
+    * Alternative for free IMAP email box:  [ProtonMail](https://mail.proton.me)
 *   OpenAI API Keys: https://platform.openai.com/api-keys
 *   eBay API: https://developer.ebay.com/my/keys
 *   UPCItemDB: https://www.upcitemdb.com/
-    *   Used for UPC lookup to add more details
+    *   API used for UPC lookup and fill in extra details
 
 
 ## Configuration
