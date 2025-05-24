@@ -43,7 +43,8 @@ def main():
     # Start Flask app in a new thread
     web_port = int(os.getenv("INPUT_HANDLER_WEB_PORT", "8080"))
     print(f"Starting Flask app on port {web_port} with debug=True, use_reloader=False...")
-    flask_thread = threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=web_port, debug=True, use_reloader=False), daemon=True)
+    print(f"[WEB_SERVER] Attempting to start Flask app on host 0.0.0.0 and port {web_port}...")
+    flask_thread = threading.Thread(target=lambda: (print(f"[WEB_SERVER] Flask app thread started, running on host 0.0.0.0 port {web_port}."), flask_app.run(host='0.0.0.0', port=web_port, debug=True, use_reloader=False)), daemon=True)
     flask_thread.start()
 
     if IMAP_URL:
