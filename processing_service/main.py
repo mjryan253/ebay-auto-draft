@@ -1,5 +1,6 @@
 import os
-import openai
+from openai import OpenAI # Added
+import openai # For openai.APIError
 import requests
 import base64
 import uuid # Added for SKU generation
@@ -7,7 +8,7 @@ from fastapi import FastAPI, Request
 
 app = FastAPI()
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY") # Removed
 UPC_API_KEY = os.getenv("UPC_API_KEY")
 EBAY_CLIENT_ID = os.getenv("EBAY_CLIENT_ID")
 EBAY_CLIENT_SECRET = os.getenv("EBAY_CLIENT_SECRET")
@@ -115,13 +116,18 @@ async def process(request: Request):
     ]
 
     try:
-        ai_response = openai.ChatCompletion.create(
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) # Added
+        ai_response = client.chat.completions.create( # Changed
             model="gpt-4-vision-preview",
             messages=messages_payload,
             max_tokens=500
         )
         content = ai_response.choices[0].message.content
-    except Exception as e:
+    except openai.APIError as e: # More specific OpenAI error
+        print(f"OpenAI API Error: {e}") # Log the error
+        return {"error": f"OpenAI API error: {str(e)}"}
+    except Exception as e: # General catch-all
+        print(f"Unexpected error during OpenAI call: {e}") # Log the error
         return {"error": f"OpenAI error: {str(e)}"}
 
     # 2. Mock UPC lookup (replace with real UPCItemDB if needed)
