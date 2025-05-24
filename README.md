@@ -23,6 +23,16 @@ Built with Python and containerized using Docker, this project aims to simplify 
 *   **(Optional) IMAP Server Details:** If you plan to use the email intake feature, you'll need the connection URL and credentials for your IMAP email account.
 *   **(Optional) eBay Developer Program Credentials:** For future development or enabling live eBay posting, you would need API credentials from the [eBay Developer Program](https://developer.ebay.com/).
 
+## Outside Resources
+
+*   TutaMail: https://mail.tutanota.com
+    * Alternative for free IMAP email box: 
+*   OpenAI API Keys: https://platform.openai.com/api-keys
+*   eBay API: https://developer.ebay.com/my/keys
+*   UPCItemDB: https://www.upcitemdb.com/
+    *   Used for UPC lookup to add more details
+
+
 ## Configuration
 
 All application configuration is managed through the `config/app.env` file. Ensure this file exists in the `config/` directory and is populated with the necessary values as described below.
@@ -121,7 +131,7 @@ The application consists of two main services orchestrated by Docker Compose:
         *   (Currently includes basic/mocked logic for UPC lookups and posting listings to eBay).
     *   **Key Technologies:** Python, FastAPI, OpenAI API.
 
+
 ## License
 
 This project is licensed under the terms of the `LICENSE` file.
-```
