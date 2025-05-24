@@ -55,8 +55,8 @@ All application configuration is managed through the `config/app.env` file. Ensu
 
 1.  **Clone the Repository:**
     ```bash
-    git clone <repository_url> # Replace <repository_url> with the actual URL
-    cd <repository_directory> # Replace <repository_directory> with the folder name
+    git clone https://github.com/mjryan253/ebay-auto-draft.git 
+    cd ebay-auto-draft
     ```
 2.  **Set up Configuration:**
     *   Navigate to the `config` directory.
